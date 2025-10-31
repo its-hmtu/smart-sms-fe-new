@@ -1,20 +1,14 @@
+import { RouterProvider } from "react-router-dom";
+import useAppRoutes from "./configs/routes";
+import { ToastContainer } from "react-toastify";
+
 function App() {
+  const routes = useAppRoutes();
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <ToastContainer />
+      <RouterProvider router={routes} />
+    </>
   );
 }
 

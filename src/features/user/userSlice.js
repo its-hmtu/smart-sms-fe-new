@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { UserInfoStorage } from "@/utils/localStorage";
+import PATH from "@/configs/PATH";
 
 const initialState = {
   user: UserInfoStorage.getUserInfo() || null,
@@ -16,6 +17,7 @@ const userSlice = createSlice({
     logoutUser: (state) => {
       state.user = null;
       UserInfoStorage.removeUserInfo();
+      window.location.href = PATH.LOGIN;
     }
   }
 })

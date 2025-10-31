@@ -4,12 +4,12 @@ function useUser() {
   const dispatch = useDispatch();
   const user = useSelector(curUser);
 
-  const login = (payload) => dispatch(loginUser(payload));
+  const saveLoginInfo = (payload) => dispatch(loginUser(payload));
   const logout = () => dispatch(logoutUser());
 
   return {
     user,
-    login,
+    saveLoginInfo,
     logout,
   }
 }

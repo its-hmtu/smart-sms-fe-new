@@ -1,3 +1,10 @@
 * {
   font-family: $base_font;
 }
+
+.ant-layout-sider-trigger {
+  background: #fff!important;
+  * {
+    color: #000!important;
+  }
+}
