@@ -64,18 +64,20 @@ const campaignsByTypeChartMetrics = [
   },
 ];
 
-const Overview = () => {
+const Overview = React.memo(() => {
   const [
     visibleDailyMessageVolumnChartMetrics,
     setVisibleDailyMessageVolumnChartMetrics,
-  ] = React.useState(
+  ] = React.useState(() => 
     dailyMessageVolumnChartMetrics.map((metric) => metric.key)
   );
 
   const [
     visibleCampaignsByTypeChartMetrics,
     setVisibleCampaignsByTypeChartMetrics,
-  ] = React.useState(campaignsByTypeChartMetrics.map((metric) => metric.key));
+  ] = React.useState(() => 
+    campaignsByTypeChartMetrics.map((metric) => metric.key)
+  );
 
   return (
     <Space direction='vertical' style={{ width: "100%" }}>
@@ -170,7 +172,7 @@ const Overview = () => {
       </Section>
     </Space>
   );
-};
+});
 
 export default Overview;
 

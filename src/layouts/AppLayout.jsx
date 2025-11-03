@@ -3,14 +3,19 @@ import styled from "styled-components";
 import Sidebar from "./components/Sider";
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import AppBreadcrumb from "@/components/AppBreadcrumb";
 
 const AppLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  
+  const handleCollapse = useCallback((value) => {
+    setCollapsed(value);
+  }, []);
   return (
     <Layout>
-      <SiderWrapper width={235} collapsed={collapsed} onCollapse={setCollapsed}>
-        <Sidebar collapsed={collapsed} />
+      <SiderWrapper width={235} collapsed={collapsed} onCollapse={handleCollapse}>
+        <Sidebar collapsed={collapsed} hasLogo />
       </SiderWrapper>
       <Layout>
         <div style={{ minHeight: "100dvh", position: "relative" }}>
@@ -18,6 +23,7 @@ const AppLayout = () => {
             <Header />
           </HeaderWrapper>
           <ContentWrapper>
+            <AppBreadcrumb />
             <Outlet/>
           </ContentWrapper>
         </div>
@@ -53,4 +59,5 @@ const ContentWrapper = styled(Layout.Content)`
   min-height: calc(100vh - 64px);
   margin-top: 64px;
   padding: 24px;
+  transition: opacity 0.2s ease-in-out;
 `;

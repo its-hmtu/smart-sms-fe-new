@@ -1,7 +1,10 @@
 const PATH = {
   HOME: '/',
   OVERVIEW: '/overview',
-  CAMPAIGN: '/manage-campaigns',
+  CAMPAIGN: {
+    ROOT: '/manage-campaigns',
+    ADD_CAMPAIGN: '/manage-campaigns/add',
+  },
   BROADCAST: '/broadcast-list',
   BLACK_LIST: '/blacklist',
   REPORT: {

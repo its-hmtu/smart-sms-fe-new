@@ -1,16 +1,28 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 import PATH from './PATH';
 import ErrorWrapper from '@/components/common/ErrorWrapper';
-import Overview from '@/pages/Overview';
-import Login from '@/pages/Login';
-import Campaigns from '@/pages/Campaigns';
-import Broadcast from '@/pages/Broadcast';
-import Blacklist from '@/pages/Blacklist';
-import AccountManagement from '@/pages/AccountManagement';
-import CampaignReport from '@/pages/Report/CampaignReport';
-import OverallReport from '@/pages/Report/OverallReport';
-import MessageHistory from '@/pages/Report/MessageHistory';
+import LoadingFallback from '@/components/common/LoadingFallback';
+
+// Lazy load page components
+const Overview = lazy(() => import('@/pages/Overview'));
+const Login = lazy(() => import('@/pages/Login'));
+const Campaigns = lazy(() => import('@/pages/Campaigns'));
+const Broadcast = lazy(() => import('@/pages/Broadcast'));
+const Blacklist = lazy(() => import('@/pages/Blacklist'));
+const AccountManagement = lazy(() => import('@/pages/AccountManagement'));
+const CampaignReport = lazy(() => import('@/pages/Report/CampaignReport'));
+const OverallReport = lazy(() => import('@/pages/Report/OverallReport'));
+const MessageHistory = lazy(() => import('@/pages/Report/MessageHistory'));
+const AddCampaign = lazy(() => import('@/pages/Campaigns/AddCampaign'));
+
+// Wrapper component with Suspense
+const LazyWrapper = ({ children }) => (
+  <Suspense fallback={<LoadingFallback />}>
+    {children}
+  </Suspense>
+);
 
 const useAppRoutes = () => {
   const routes = [
@@ -25,41 +37,49 @@ const useAppRoutes = () => {
         },
         {
           path: PATH.OVERVIEW,
-          element: <Overview />
+          element: <LazyWrapper><Overview /></LazyWrapper>
         },
         {
-          path: PATH.CAMPAIGN,
-          element: <Campaigns />
+          path: PATH.CAMPAIGN.ROOT,
+          element: <LazyWrapper><Campaigns /></LazyWrapper>
+        },
+        {
+          path: PATH.CAMPAIGN.ADD_CAMPAIGN,
+          element: <LazyWrapper><AddCampaign /></LazyWrapper>
         },
         {
           path: PATH.BROADCAST,
-          element: <Broadcast />
+          element: <LazyWrapper><Broadcast /></LazyWrapper>
         },
         {
           path: PATH.BLACK_LIST,
-          element: <Blacklist />
+          element: <LazyWrapper><Blacklist /></LazyWrapper>
         },
         {
           path: PATH.REPORT.CAMPAIGN_REPORT,
-          element: <CampaignReport />,
+          element: <LazyWrapper><CampaignReport /></LazyWrapper>,
         },
         {
           path: PATH.REPORT.OVERALL_REPORT,
-          element: <OverallReport />
+          element: <LazyWrapper><OverallReport /></LazyWrapper>
         },
         {
           path: PATH.REPORT.MESSAGE_HISTORY,
-          element: <MessageHistory />
+          element: <LazyWrapper><MessageHistory /></LazyWrapper>
         },
         {
           path: PATH.ACCOUNT_MANAGEMENT,
-          element: <AccountManagement />
+          element: <LazyWrapper><AccountManagement /></LazyWrapper>
         },
       ]
     },
     {
       path: PATH.LOGIN,
-      element: <Login />
+      element: <LazyWrapper><Login /></LazyWrapper>
+    },
+    {
+      path: '*',
+      element: <ErrorWrapper status='403' />
     }
   ]
 
