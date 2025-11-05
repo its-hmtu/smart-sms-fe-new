@@ -8,7 +8,8 @@ const AppInput = ({
   rules = [],
   placeholder = "Input...",
   onSearch,
-  props,
+  layout = "vertical",
+  ...props
 }) => {
   return (
     <Form.Item
@@ -16,6 +17,7 @@ const AppInput = ({
       name={name}
       required={required}
       rules={rules}
+      layout={layout}
     >
       <Input placeholder={placeholder} onSearch={onSearch} {...props} />
     </Form.Item>

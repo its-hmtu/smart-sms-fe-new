@@ -7,9 +7,12 @@ const AppSelect = ({
   name = "select",
   rules = [],
   placeholder = "Please select",
+  multiple = false,
   onChange,
+  onSearch,
+  showSearch = false,
   options = [],
-  props,
+  ...props
 }) => {
   return (
     <Form.Item
@@ -22,6 +25,9 @@ const AppSelect = ({
         placeholder={placeholder}
         onChange={onChange}
         options={options}
+        onSearch={onSearch}
+        showSearch={showSearch}
+        mode={multiple ? "multiple" : undefined}
         style={{ width: "100%" }}
         {...props}
       />

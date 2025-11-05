@@ -41,7 +41,7 @@ const HeaderWrapper = styled(Layout.Header)`
   top: 0;
   right: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 998;
   padding-left: calc(235px + 24px);
 `;
 
@@ -51,7 +51,7 @@ const SiderWrapper = styled(Layout.Sider)`
   height: 100dvh;
   background: #fff;
   /* box-shadow: 2px 0 8px #ccc; */
-  z-index: 1001;
+  z-index: 999;
 `;
 
 const ContentWrapper = styled(Layout.Content)`

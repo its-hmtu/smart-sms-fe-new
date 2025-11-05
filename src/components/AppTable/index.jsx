@@ -7,7 +7,7 @@ function AppTable({
   dataSource = [],
   pagination = {},
   loading = false,
-  props,
+  ...props
 }) {
   const formatColumns = useMemo(() => {
     if (!columns || columns.length === 0) return [];
@@ -25,10 +25,11 @@ function AppTable({
           if (typeof text === "number") {
             return formatNumber(text);
           }
+          return text;
         },
       };
     });
-  })
+  }, [columns]);
 
   return (
     <Table

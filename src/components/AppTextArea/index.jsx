@@ -10,7 +10,7 @@ const AppTextArea = ({
   showCount = false,
   maxLength,
   onSearch,
-  props,
+  ...props
 }) => {
   return (
     <Form.Item
