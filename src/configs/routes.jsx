@@ -44,7 +44,7 @@ const useAppRoutes = () => {
           element: <LazyWrapper><Campaigns /></LazyWrapper>
         },
         {
-          path: PATH.CAMPAIGN.ADD_CAMPAIGN,
+          path: PATH.CAMPAIGN.CREATE_CAMPAIGN,
           element: <LazyWrapper><AddCampaign /></LazyWrapper>
         },
         {

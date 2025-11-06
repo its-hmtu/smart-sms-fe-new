@@ -8,30 +8,40 @@ import { useMutation } from "@tanstack/react-query";
 import UserService from "@/features/user/userService";
 import useUser from "@/features/user/useUser";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import PATH from "@/configs/PATH";
 
 const Login = () => {
   const [form] = Form.useForm();
-  const {
-    saveLoginInfo
-  } = useUser()
+  const { saveLoginInfo } = useUser();
+  const navigate = useNavigate();
   const loginMutation = useMutation({
-    mutationFn: async (values) => {
-      await UserService.login(values);
-    },
-    onSuccess: (data) => {
-      saveLoginInfo(data);
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || "Login failed");
-    },
+    mutationFn: UserService.login,
   });
   const onFinish = (values) => {
-    loginMutation.mutate(values);
+    loginMutation.mutate(values, {
+      onSuccess: (data) => {
+        console.log("Login successful:", data);
+
+        // Save user data to Redux store
+        saveLoginInfo(data);
+
+        // Show success message
+        toast.success("Login successful!");
+
+        // Navigate to overview page
+        navigate(PATH.OVERVIEW);
+      },
+      onError: (error) => {
+        console.error("Login failed:", error);
+        toast.error("Login failed. Please check your credentials.");
+      },
+    });
   };
 
   return (
     <LoginWrapper>
-      <img src={bitelLogo} alt="Bitel" />
+      <img src={bitelLogo} alt='Bitel' />
       <h1>Smart SMS</h1>
       <div className='login-form'>
         <Form
@@ -54,7 +64,7 @@ const Login = () => {
               },
             ]}
           >
-            <Input prefix={<UserIcon size={14} />} placeholder="Username" />
+            <Input prefix={<UserIcon size={14} />} placeholder='Username' />
           </Form.Item>
           <Form.Item
             //  label='Password'
@@ -67,28 +77,37 @@ const Login = () => {
               },
               {
                 min: 6,
-                message: "Password must contain at least one uppercase letter and 6 to 10 characters",
+                message:
+                  "Password must contain at least 6 to 10 characters",
                 max: 10,
-                validator: (_, value) => {
-                  // 6-10 characters, at least one uppercase letter     
-                  const regex = /^(?=.*[A-Z]).{6,10}$/;             
-                  if (value && !regex.test(value)) {
-                    return Promise.reject(new Error("Password must contain at least one uppercase letter and 6 to 10 characters"));
-                  }
-                  return Promise.resolve();
-                }
-
-              }
+                // validator: (_, value) => {
+                //   // 6-10 characters, at least one uppercase letter
+                //   const regex = /^(?=.*[A-Z]).{6,10}$/;
+                //   if (value && !regex.test(value)) {
+                //     return Promise.reject(new Error("Password must contain at least one uppercase letter and 6 to 10 characters"));
+                //   }
+                //   return Promise.resolve();
+                // }
+              },
             ]}
           >
-            <Input.Password prefix={<LockIcon size={14} />} placeholder="Password" />
+            <Input.Password
+              prefix={<LockIcon size={14} />}
+              placeholder='Password'
+            />
           </Form.Item>
           <Form.Item>
             <Checkbox>Remember me</Checkbox>
           </Form.Item>
           <Form.Item>
-            <Button type='primary' htmlType='submit' block>
-              Login
+            <Button
+              type='primary'
+              htmlType='submit'
+              block
+              loading={loginMutation.isPending}
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? 'Logging in...' : 'Login'}
             </Button>
           </Form.Item>
         </Form>
@@ -116,7 +135,7 @@ const LoginWrapper = styled.div`
   }
 
   h1 {
-    color: #2C7A8C;
+    color: #2c7a8c;
     font-size: 48px;
     font-weight: bold;
     text-transform: uppercase;

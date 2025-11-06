@@ -20,13 +20,31 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { QueryBoxWrapper } from "@/components/common";
+import { useQuery } from "@tanstack/react-query";
+import CampaignService from "@/features/campaign/campaignService";
 
 const Campaigns = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [pageSize, setPageSize] = React.useState(10);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const { data, isLoading } = useQuery({
+    queryKey: ['campaigns', pageSize, currentPage],
+    queryFn: () => {
+      return CampaignService.getCampaign({
+        perPage: pageSize,
+        page: currentPage,
+      });
+    },
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  console.log("Campaign data:", data);
 
   const handleToAddCampaign = () => {
-    navigate(PATH.CAMPAIGN.ADD_CAMPAIGN);
+    navigate(PATH.CAMPAIGN.CREATE_CAMPAIGN);
   };
 
   const handleReset = () => {
@@ -153,16 +171,21 @@ const Campaigns = () => {
     <Space direction='vertical' style={{ width: "100%" }}>
       <Form layout='vertical' form={form} onFinish={onFinish}>
         <QueryBoxWrapper justify='space-between' align='flex-end'>
-          <Row style={{
-            width: '100%',
-            flexWrap: 'nowrap'
-          }} gutter={[8, 8]}>
+          <Row
+            style={{
+              width: "100%",
+              flexWrap: "nowrap",
+            }}
+            gutter={[8, 8]}
+          >
             <Col span={4}>
               <AppSearch
                 label='Search Campaign'
                 name='campaign'
                 placeholder='Search Campaign'
-                noStyle
+                formStyle={{
+                  marginBottom: 0
+                }}
               />
             </Col>
             <Col span={4}>
@@ -170,7 +193,9 @@ const Campaigns = () => {
                 label='Created Date'
                 name='created_date'
                 placeholder='Created Date'
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
             <Col span={4}>
@@ -178,7 +203,9 @@ const Campaigns = () => {
                 label='Created Date'
                 name='created_date'
                 placeholder='Created Date'
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
             <Col span={4}>
@@ -187,7 +214,9 @@ const Campaigns = () => {
                 name='type'
                 placeholder='Select Type'
                 options={selectTypeOptions}
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
             <Col span={4}>
@@ -196,7 +225,9 @@ const Campaigns = () => {
                 name='status'
                 placeholder='Select Status'
                 options={selectStatusOptions}
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
           </Row>
@@ -209,7 +240,7 @@ const Campaigns = () => {
           </Flex>
         </QueryBoxWrapper>
       </Form>
-      <Flex align='center' justify="flex-end">
+      <Flex align='center' justify='flex-end'>
         <Button
           type='primary'
           icon={<PlusIcon size={14} />}
@@ -221,17 +252,22 @@ const Campaigns = () => {
       <AppTable
         columns={columns}
         dataSource={[
-          {
-            id: 1,
-            no: 1,
-            campaign: "123",
-          },
+          
         ]}
+        pagination={
+          {
+            pageSize: pageSize,
+            current: currentPage,
+            total: data?.count || 0,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            }
+          }
+        }
       />
     </Space>
   );
 };
 
 export default Campaigns;
-
-

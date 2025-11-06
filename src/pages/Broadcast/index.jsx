@@ -28,7 +28,7 @@ const Broadcast = () => {
   const navigate = useNavigate();
 
   const handleToAddCampaign = () => {
-    navigate(PATH.CAMPAIGN.ADD_CAMPAIGN);
+    navigate(PATH.CAMPAIGN.CREATE_CAMPAIGN);
   };
 
   const handleReset = () => {

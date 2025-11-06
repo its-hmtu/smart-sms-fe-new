@@ -3,7 +3,7 @@ const PATH = {
   OVERVIEW: '/overview',
   CAMPAIGN: {
     ROOT: '/manage-campaigns',
-    ADD_CAMPAIGN: '/manage-campaigns/add',
+    CREATE_CAMPAIGN: '/manage-campaigns/create',
   },
   BROADCAST: '/broadcast-list',
   BLACK_LIST: '/blacklist',

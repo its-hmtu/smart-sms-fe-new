@@ -5,6 +5,8 @@ import AddCampaignStep1 from "./AddCampaignStep1";
 import AddCampaignStep2 from "./AddCampaignStep2";
 import AddCampaignStep3 from "./AddCampaignStep3";
 import useCampaign from "@/features/campaign/useCampaign";
+import { useQuery } from "@tanstack/react-query";
+import CampaignService from "@/features/campaign/campaignService";
 
 const steps = [
   {
@@ -22,7 +24,6 @@ const steps = [
 ];
 
 const AddCampaign = () => {
-  const [openUploadModal, setOpenUploadModal] = useState(false);
   const [formStep1] = Form.useForm();
   const [formStep2] = Form.useForm();
   const [formStep3] = Form.useForm();
@@ -131,17 +132,13 @@ const AddCampaign = () => {
       case 0:
         return (
           <AddCampaignStep1
-            setOpenUploadModal={setOpenUploadModal}
-            form={formStep1}
-            initialData={getStepData(0)}
+            steps={steps}
           />
         );
       case 1:
         return (
           <AddCampaignStep2 
-            form={formStep2}
-            initialData={getStepData(1)}
-            saveStepData={(data) => saveStepData(1, data)}
+            steps={steps}
           />
         );
       case 2:
@@ -149,13 +146,12 @@ const AddCampaign = () => {
           <AddCampaignStep3 
             form={formStep3}
             initialData={getStepData(2)}
-            allStepData={{ step1: getStepData(0), step2: getStepData(1) }}
           />
         );
       default:
         return null;
     }
-  }, [currentStep, formStep1, formStep2, formStep3, getStepData, saveStepData]);
+  }, [currentStep, formStep1, formStep2, formStep3]);
 
   return (
     <Space
@@ -172,36 +168,6 @@ const AddCampaign = () => {
       <Divider />
 
       {renderStepContent()}
-
-      <Flex
-        justify='space-between'
-        align='center'
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <div>
-          {currentStep > 0 && (
-            <Button onClick={prevStep}>
-              Previous
-            </Button>
-          )}
-        </div>
-        
-        <Flex gap={8}>
-          <Button onClick={reset} type="default">
-            Reset
-          </Button>
-          <Button onClick={nextStep} type='primary'>
-            {currentStep === steps.length - 1 ? 'Complete Campaign' : 'Next'}
-          </Button>
-        </Flex>
-      </Flex>
-
-      <UploadSubscriberListModal
-        open={openUploadModal}
-        onCancel={() => setOpenUploadModal(false)}
-      />
     </Space>
   );
 };

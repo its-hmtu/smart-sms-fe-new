@@ -12,6 +12,7 @@ const AppSelect = ({
   onSearch,
   showSearch = false,
   options = [],
+  formStyle = {},
   ...props
 }) => {
   return (
@@ -20,6 +21,7 @@ const AppSelect = ({
       name={name}
       required={required}
       rules={rules}
+      style={formStyle}
     >
       <Select
         placeholder={placeholder}

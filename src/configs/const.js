@@ -1,9 +1,9 @@
 const REQUEST_TYPE = {
-  text: 'text_request',
-  menu: 'menu_request',
-  url: 'url_request',
-  call: 'call_request',
-  ussd: 'ussd_request'
+  text: 'TEXT',
+  menu: 'MENU',
+  url: 'URL',
+  call: 'CALL',
+  ussd: 'USSD'
 }
 
 export {

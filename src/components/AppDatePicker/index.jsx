@@ -11,10 +11,12 @@ const AppDatePicker = ({
   onChange,
   isTimePicker = false,
   showSecond = false,
-  props,
+  noStyle = false,
+  formStyle = {},
+  ...props
 }) => {
   return (
-    <Form.Item label={label} name={name} rules={rules} required={required}>
+    <Form.Item label={label} name={name} rules={rules} required={required} noStyle={noStyle} style={formStyle}>
       {isTimePicker ? (
         <DatePicker.TimePicker
           placeholder={placeholder}

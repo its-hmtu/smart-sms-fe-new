@@ -8,11 +8,13 @@ const AppSearch = ({
   rules = [],
   placeholder = "Search...",
   onSearch,
-  props,
+  formStyle = {},
+  ...props
 }) => {
   return (
     <Form.Item
       label={label}
+      style={formStyle}
       name={name}
       required={required}
       rules={rules}

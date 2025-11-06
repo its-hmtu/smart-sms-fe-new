@@ -1,6 +1,16 @@
 import AppInput from "@/components/AppInput";
 import AppSelect from "@/components/AppSelect";
-import { Button, Card, Col, Divider, Form, Row, Space, Flex } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Row,
+  Space,
+  Flex,
+  message,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import { SectionTitle } from "../components";
 import AppDatePicker from "@/components/AppDatePicker";
@@ -8,6 +18,12 @@ import AppTextArea from "@/components/AppTextArea";
 import { PlusIcon, XIcon, UploadIcon } from "lucide-react";
 import { REQUEST_TYPE } from "@/configs/const";
 import useCampaign from "@/features/campaign/useCampaign";
+import UploadSubscriberListModal from "@/components/Modals/UploadSubscriberListModal";
+import dayjs from "dayjs";
+import CampaignService from "@/features/campaign/campaignService";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import useUser from "@/features/user/useUser";
+import { toast } from "react-toastify";
 const originalMenuRequestTableData = [
   {
     key: 1,
@@ -44,11 +60,9 @@ const timeSlotOptions = [
   },
 ];
 
-const AddCampaignStep1 = ({
-  setOpenUploadModal,
-  form
-}) => {
+const AddCampaignStep1 = ({ steps }) => {
   const [selectedType, setSelectedType] = useState(null);
+  const [openUploadModal, setOpenUploadModal] = useState(false);
   const [menuRequestTableData, setMenuRequestTableData] = useState(
     originalMenuRequestTableData
   );
@@ -59,29 +73,53 @@ const AddCampaignStep1 = ({
     },
     {
       label: "Text Request",
-      value: "text_request",
+      value: REQUEST_TYPE.text,
     },
     {
       label: "Menu Request",
-      value: "menu_request",
+      value: REQUEST_TYPE.menu,
     },
     {
       label: "URL Request",
-      value: "url_request",
+      value: REQUEST_TYPE.url,
     },
     {
       label: "Call Request",
-      value: "call_request",
+      value: REQUEST_TYPE.call,
     },
     {
       label: "USSD Request",
-      value: "ussd_request",
+      value: REQUEST_TYPE.ussd,
     },
   ];
+  const [subscriberData, setSubscriberData] = useState(null);
+  const [form] = Form.useForm();
+
+  const { campaign, currentStep, updateCurrentStep, saveStepData } =
+    useCampaign();
+  const { user } = useUser();
 
   const {
-    campaign
-  } = useCampaign();
+    data: subscriberList,
+    isLoading: isLoadingSubscriberList,
+    refetch: refetchSubscriberList,
+  } = useQuery({
+    queryKey: ["subscriberList"],
+    queryFn: CampaignService.getSubscriberGroup,
+  });
+
+  const createCampaignMutation = useMutation({
+    mutationFn: CampaignService.createCampaign,
+  });
+
+  // console.log("Subscriber List:", subscriberList);
+
+  useEffect(() => {
+    if (subscriberData) {
+      // Set the select value to just the ID, not an object
+      form.setFieldValue("subscriber_list_select", subscriberData.id);
+    }
+  }, [subscriberData, form]);
 
   useEffect(() => {
     if (campaign.data && campaign.data.type) {
@@ -91,8 +129,6 @@ const AddCampaignStep1 = ({
       });
     }
   }, [campaign.data]);
-
-  console.log(campaign)
 
   const onFinishBasicInfo = () => {
     const type = form.getFieldValue("type");
@@ -125,6 +161,13 @@ const AddCampaignStep1 = ({
                   showCount
                   placeholder='Text 1'
                   maxLength={100}
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 1",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -137,6 +180,12 @@ const AddCampaignStep1 = ({
                   placeholder='Text 2'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 2",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -158,7 +207,7 @@ const AddCampaignStep1 = ({
               <Col>
                 <AppInput
                   label='Service Short Code'
-                  name='service_short_code'
+                  name='short_code'
                   placeholder='Service Short Code'
                   required
                   rules={[
@@ -183,6 +232,13 @@ const AddCampaignStep1 = ({
                   showCount
                   placeholder='Text 1'
                   maxLength={100}
+                  required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 1 content",
+                    },
+                  ]}
                 />
               </Col>
               <Col span={24}>
@@ -193,6 +249,12 @@ const AddCampaignStep1 = ({
                   placeholder='Text 2'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 2 content",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -267,6 +329,12 @@ const AddCampaignStep1 = ({
                               name={`item_content_${data.key}`}
                               required={data.key === 1}
                               placeholder={`Item ${data.key}`}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter item content",
+                                },
+                              ]}
                             />
                           </Col>
                         </Row>
@@ -277,12 +345,6 @@ const AddCampaignStep1 = ({
                               name={`mo_${data.key}`}
                               placeholder='MO'
                               layout='horizontal'
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please enter MO",
-                                },
-                              ]}
                             />
                           </Col>
                           <Col span={12}>
@@ -291,12 +353,6 @@ const AddCampaignStep1 = ({
                               name={`prefix_${data.key}`}
                               placeholder='Prefix'
                               layout='horizontal'
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please enter prefix",
-                                },
-                              ]}
                             />
                           </Col>
                         </Row>
@@ -319,6 +375,7 @@ const AddCampaignStep1 = ({
                   showCount
                   placeholder='Text 1'
                   maxLength={100}
+                  required
                 />
               </Col>
             </Row>
@@ -363,6 +420,7 @@ const AddCampaignStep1 = ({
                   showCount
                   placeholder='Text 1'
                   maxLength={100}
+                  required
                 />
               </Col>
             </Row>
@@ -402,6 +460,7 @@ const AddCampaignStep1 = ({
             <Row gutter={[16, 16]}>
               <Col span={12}>
                 <AppTextArea
+                  required
                   label='Text 1'
                   name='text_1'
                   showCount
@@ -445,219 +504,332 @@ const AddCampaignStep1 = ({
     }
   };
 
+  const beforeNextStep = async () => {
+    const allFormValues = form.getFieldsValue();
+    const {
+      start_date,
+      end_date,
+      start_with,
+      end_with,
+      time_slot_start,
+      time_slot,
+      time_slot_end,
+      campaign_name,
+      type,
+      repeat_display,
+      daily_message_limit,
+      subscriber_list_select,
+      text_1,
+      text_2,
+      ...rest
+    } = allFormValues;
+
+    const startDate = dayjs(start_date).format("YYYY-MM-DD");
+    const endDate = dayjs(end_date).format("YYYY-MM-DD");
+    const startWith = dayjs(start_with).format("HH:mm");
+    const endWith = dayjs(end_with).format("HH:mm");
+
+    // Handle different request types data structure
+    let campaignData = {
+      text_1,
+      text_2,
+    };
+
+    if (type === REQUEST_TYPE.menu) {
+      // Extract menu items from form values
+      const items = menuRequestTableData
+        .map((menuItem) => {
+          return {
+            item_name: allFormValues[`item_content_${menuItem.key}`] || "",
+            mo: allFormValues[`mo_${menuItem.key}`] || "",
+            short_code: allFormValues[`prefix_${menuItem.key}`] || "",
+          };
+        })
+        .filter((item) => item.item_name); // Filter out empty items
+
+      campaignData.items = items;
+    } else if (type === REQUEST_TYPE.text) {
+      campaignData.mo = rest.mo;
+      campaignData.short_code = rest.short_code;
+    } else if (type === REQUEST_TYPE.url) {
+      campaignData.url = rest.url;
+    } else if (type === REQUEST_TYPE.call) {
+      campaignData.number = rest.number;
+    } else if (type === REQUEST_TYPE.ussd) {
+      campaignData.ussd = rest.ussd;
+    }
+
+    const payload = {
+      name: campaign_name || "",
+      type: type || "",
+      data: campaignData,
+      start_time: `${startDate} ${startWith}` || "",
+      end_time: `${endDate} ${endWith}` || "",
+      time_slot: time_slot || "",
+      max_show_limit: repeat_display || "",
+      daily_message_limit: daily_message_limit || "",
+      group_id: subscriber_list_select || "",
+      step: 1,
+      user_create: user?.userInfo.id || "",
+    };
+    // Save the step data to Redux store
+    await createCampaignMutation.mutateAsync(payload, {
+      onSuccess: (data) => {
+        saveStepData(0, data);
+        updateCurrentStep(1);
+      },
+    });
+  };
+
+  const nextStep = async () => {
+    await form
+      .validateFields()
+      .then(() => beforeNextStep())
+      .catch((errorInfo) => {
+        toast.error("Please fill all required info fields");
+      });
+  };
+
+  const handleAddTimeSlot = () => {
+    // logic add time slot
+    const timeSlotStart = form.getFieldValue("time_slot_start");
+    const timeSlotEnd = form.getFieldValue("time_slot_end");
+    if (timeSlotStart && timeSlotEnd) {
+      const newTimeSlot = `${dayjs(timeSlotStart).format("HH:mm")} - ${dayjs(
+        timeSlotEnd
+      ).format("HH:mm")}`;
+      const existingTimeSlots = form.getFieldValue("time_slot") || [];
+      form.setFieldsValue({
+        time_slot: [...existingTimeSlots, newTimeSlot],
+      });
+
+      // Clear the time slot pickers
+      form.resetFields(["time_slot_start", "time_slot_end"]);
+    }
+  };
+
   return (
-    <Form
-      layout='vertical'
-      initialValues={{
-        campaign_name: "",
-        type: null,
-      }}
-      component={false}
-      form={form}
-    >
-      <Row gutter={[8, 8]}>
-        <Col span={8}>
-          <AppInput
-            required
-            label='Campaign name'
-            name='campaign_name'
-            placeholder='Campaign name'
-            rules={[
-              {
-                required: true,
-                message: "Please enter campaign name",
-              },
-            ]}
-          />
-        </Col>
-        <Col span={6}>
-          <AppSelect
-            required
-            options={selectOptions}
-            label='Type'
-            name='type'
-            placeholder='Select Type'
-            rules={[
-              {
-                required: true,
-                message: "Please select type",
-              },
-            ]}
-          ></AppSelect>
-        </Col>
-        <Col span={8}>
-          <Form.Item label=' '>
-            <Button
-              type='primary'
-              htmlType='submit'
-              onClick={onFinishBasicInfo}
-            >
-              Confirm
-            </Button>
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Divider />
-      {selectedType && (
-        <>
-          {renderContentByType()}
-          <Divider />
-        </>
-      )}
-
-      <Row gutter={[24, 24]}>
-        <Col span={8}>
-          <SectionTitle>Subscriber List</SectionTitle>
-          <Form.Item>
-            <Button
-              icon={<UploadIcon size={14} />}
-              onClick={() => setOpenUploadModal(true)}
-            >
-              Import File
-            </Button>
-          </Form.Item>
-          <AppSelect
-            label={null}
-            name='subcriber_list_select'
-            placeholder='Select or search'
-            options={[]}
-          />
-          <p>Total subcribers: {0}</p>
-          <p>Last updated: {"-"}</p>
-        </Col>
-        <Col span={8}>
-          <SectionTitle>Spam settings</SectionTitle>
-          <AppInput
-            label='Repeat Display (non-interactive)'
-            name='repeat_display'
-            placeholder='Repeat Display'
-          />
-          <AppInput
-            label='Daily Message Limit per Subscriber'
-            name='daily_message_limit'
-            placeholder='Daily Message Limit per Subscriber'
-          />
-        </Col>
-        <Col span={8}>
-          <SectionTitle>Time settings</SectionTitle>
-          <Row>
-            <Form.Item
-              label={
-                <p
-                  style={{
-                    marginRight: 8,
-                  }}
-                >
-                  Start time
-                </p>
-              }
+    <>
+      <Form
+        layout='vertical'
+        initialValues={{
+          campaign_name: "",
+          type: selectedType,
+        }}
+        component={false}
+        form={form}
+      >
+        <Row gutter={[8, 8]}>
+          <Col span={8}>
+            <AppInput
               required
-              layout='horizontal'
-              style={{
-                width: "100%",
-              }}
-            >
+              label='Campaign name'
+              name='campaign_name'
+              placeholder='Campaign name'
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter campaign name",
+                },
+              ]}
+            />
+          </Col>
+          <Col span={6}>
+            <AppSelect
+              required
+              options={selectOptions}
+              label='Type'
+              name='type'
+              placeholder='Select Type'
+              rules={[
+                {
+                  required: true,
+                  message: "Please select type",
+                },
+              ]}
+            ></AppSelect>
+          </Col>
+          <Col span={8}>
+            <Form.Item label=' '>
+              <Button
+                type='primary'
+                htmlType='submit'
+                onClick={onFinishBasicInfo}
+              >
+                Confirm
+              </Button>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Divider />
+        {selectedType && (
+          <>
+            {renderContentByType()}
+            <Divider />
+          </>
+        )}
+
+        {selectedType && (
+          <Row gutter={[24, 24]}>
+            <Col span={8}>
+              <SectionTitle>Subscriber List</SectionTitle>
+              <Form.Item>
+                <Button
+                  icon={<UploadIcon size={14} />}
+                  onClick={() => setOpenUploadModal(true)}
+                >
+                  Import File
+                </Button>
+              </Form.Item>
+              <AppSelect
+                label='Subscriber Group'
+                name='subscriber_list_select'
+                placeholder='Select or search'
+                showSearch
+                optionFilterProp='label'
+                options={
+                  subscriberList?.map((list) => ({
+                    label: list.group_name,
+                    value: list.id,
+                  })) || []
+                }
+                required
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select subscriber group",
+                  },
+                ]}
+              />
+              {subscriberData && (
+                <>
+                  <p>
+                    Total subscribers: {subscriberData?.total_subscriber || 0}
+                  </p>
+                  <p>
+                    Last updated:{" "}
+                    {dayjs(subscriberData?.created_at).format(
+                      "DD-MM-YYYY HH:mm"
+                    )}
+                  </p>
+                </>
+              )}
+              <UploadSubscriberListModal
+                open={openUploadModal}
+                onCancel={() => setOpenUploadModal(false)}
+                setOpen={setOpenUploadModal}
+                setSubscriberData={setSubscriberData}
+                refetchSubscriberList={refetchSubscriberList}
+              />
+            </Col>
+            <Col span={8}>
+              <SectionTitle>Spam settings</SectionTitle>
+              <AppInput
+                label='Repeat Display (non-interactive)'
+                name='repeat_display'
+                placeholder='Repeat Display'
+              />
+              <AppInput
+                label='Daily Message Limit per Subscriber'
+                name='daily_message_limit'
+                placeholder='Daily Message Limit per Subscriber'
+              />
+            </Col>
+            <Col span={8}>
+              <SectionTitle>Time settings</SectionTitle>
               <Row gutter={[8, 8]}>
                 <Col span={12}>
                   <AppDatePicker
-                    label={null}
+                    label={"Start Time"}
                     name='start_date'
                     placeholder='Start Date'
                     format='DD-MM-YYYY'
+                    layout='horizontal'
+                    required
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please choose start date",
+                      },
+                    ]}
                   />
                 </Col>
                 <Col span={12}>
                   <AppDatePicker
                     showTime={{ format: "HH:mm" }}
-                    label={null}
+                    label={" "}
                     name='start_with'
                     placeholder='Start With'
                     isTimePicker={true}
                     format='HH:mm'
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please choose start with time",
+                      },
+                    ]}
                   />
                 </Col>
               </Row>
-            </Form.Item>
-          </Row>
-          <Row>
-            <Form.Item
-              label={
-                <p
-                  style={{
-                    marginRight: 8,
-                  }}
-                >
-                  End time
-                </p>
-              }
-              required
-              layout='horizontal'
-              style={{
-                width: "100%",
-              }}
-            >
               <Row gutter={[8, 8]}>
                 <Col span={12}>
                   <AppDatePicker
-                    label={null}
+                    label='End time'
                     name='end_date'
                     placeholder='End Date'
                     format='DD-MM-YYYY'
+                    required
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please choose end date",
+                      },
+                    ]}
                   />
                 </Col>
                 <Col span={12}>
                   <AppDatePicker
                     showTime={{ format: "HH:mm" }}
-                    label={null}
+                    label={" "}
                     name='end_with'
                     placeholder='End With'
                     isTimePicker={true}
                     format='HH:mm'
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please choose end with time",
+                      },
+                    ]}
                   />
                 </Col>
               </Row>
-            </Form.Item>
-          </Row>
-          <Row>
-            <Form.Item
-              label={
-                <p
-                  style={{
-                    marginRight: 8,
-                  }}
-                >
-                  Time slots
-                </p>
-              }
-              required
-              layout='horizontal'
-              style={{
-                width: "100%",
-              }}
-            >
-              <Row gutter={[8, 16]}>
+              <Row gutter={[8, 8]}>
                 <Col span={24}>
                   <AppSelect
                     showSearch
-                    label={null}
+                    label={"Time Slot"}
                     options={timeSlotOptions}
                     multiple
-                    name="time_slots"
+                    name='time_slot'
                     placeholder='Select time slots'
+                    required
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please choose time slots",
+                      },
+                    ]}
                   />
                 </Col>
-                <Row
-                  gutter={[8, 8]}
-                  style={{
-                    marginTop: 24,
-                  }}
-                >
+                <Row gutter={8}>
                   <Col span={8}>
                     <AppDatePicker
                       showTime={{ format: "HH:mm" }}
-                      label={null}
-                      // name='time_slot_start'
+                      // label={null}
+                      noStyle
+                      name='time_slot_start'
                       placeholder='Select time'
                       isTimePicker={true}
                       format='HH:mm'
@@ -666,8 +838,8 @@ const AddCampaignStep1 = ({
                   <Col span={8}>
                     <AppDatePicker
                       showTime={{ format: "HH:mm" }}
-                      label={null}
-                      // name='time_slot_end'
+                      noStyle
+                      name='time_slot_end'
                       placeholder='Select time'
                       isTimePicker={true}
                       format='HH:mm'
@@ -675,16 +847,42 @@ const AddCampaignStep1 = ({
                   </Col>
                   <Col span={8}>
                     <Form.Item>
-                      <Button type='primary'>Add time slots</Button>
+                      <Button
+                        type='primary'
+                        onClick={() => handleAddTimeSlot()}
+                      >
+                        Add time slots
+                      </Button>
                     </Form.Item>
                   </Col>
                 </Row>
               </Row>
-            </Form.Item>
+            </Col>
           </Row>
-        </Col>
-      </Row>
-    </Form>
+        )}
+      </Form>
+
+      <Flex
+        justify='space-between'
+        align='center'
+        style={{
+          marginTop: 24,
+        }}
+      >
+        <div>{currentStep > 0 && <Button onClick>Previous</Button>}</div>
+
+        <Flex gap={8}>
+          <Button
+            onClick={nextStep}
+            type='primary'
+            disabled={createCampaignMutation.isPending}
+            loading={createCampaignMutation.isPending}
+          >
+            {currentStep === steps.length - 1 ? "Complete Campaign" : "Next"}
+          </Button>
+        </Flex>
+      </Flex>
+    </>
   );
 };
 
