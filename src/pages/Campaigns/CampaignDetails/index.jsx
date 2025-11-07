@@ -7,7 +7,7 @@ import { App, Button, Card, Descriptions, Flex, Space } from "antd";
 import dayjs from "dayjs";
 import { countBy, isArray, keyBy } from "lodash";
 import React, { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 const columns = [
   {
@@ -21,9 +21,10 @@ const columns = [
   },
 ];
 
-const AddCampaignStep3 = ({ steps }) => {
-  const { campaign, currentStep, reset, markComplete } = useCampaign();
-  const campaignData = campaign.stepData.step1 || {};
+const CampaignDetails = () => {
+  const location = useLocation();
+  const { record } = location.state || {};
+  // const campaignData = campaign.stepData.step1 || {};
   const {
     data: subscriberList,
     isLoading: isLoadingSubscriberList,
@@ -33,6 +34,7 @@ const AddCampaignStep3 = ({ steps }) => {
     queryFn: CampaignService.getSubscriberGroup,
   });
   const navigate = useNavigate();
+  console.log(record)
 
   const thisSubscriberListById = useMemo(() => {
     if (!isArray(subscriberList) || !subscriberList) {
@@ -41,33 +43,23 @@ const AddCampaignStep3 = ({ steps }) => {
 
     return (
       subscriberList?.filter(
-        (item) => item.id === campaignData.sub_group_id
+        (item) => item.id === record.SUB_GROUP_ID
       )[0] || { subscribers: [] }
     );
   });
 
-  // console.log(thisSubscriberListById)
-
-  const prevStep = () => {};
-
-  const nextStep = async () => {
-    await navigate(PATH.CAMPAIGN.ROOT, { replace: true }).then(() => {
-      reset();
-    });
-  };
-
   const mapCampaignData = useMemo(() => {
-    const parsedData = JSON.parse(campaignData.data || {});
+    const parsedData = JSON.parse(record.DATA || {});
 
     return {
-      name: campaignData.name,
-      type: campaignData.type,
+      name: record.NAME,
+      type: record.TYPE,
       ...parsedData,
     };
   }, []);
 
   const mapItemCampaignData = useMemo(() => {
-    const parsedData = JSON.parse(campaignData.data || {});
+    const parsedData = JSON.parse(record.DATA || {});
     if (parsedData.items && isArray(parsedData.items)) {
       return parsedData.items;
     }
@@ -82,7 +74,7 @@ const AddCampaignStep3 = ({ steps }) => {
           width: "100%",
         }}
       >
-        <Card title='Summary'>
+        <Card title='Campaign Details'>
           <Descriptions column={2}>
             {Object.entries(mapCampaignData).map(([key, value]) => {
               if (key === "items") {
@@ -157,20 +149,20 @@ const AddCampaignStep3 = ({ steps }) => {
           <Card title='Spam Settings'>
             <Descriptions column={1}>
               <Descriptions.Item label='Repeat Display (non-interactive)'>
-                {campaignData.max_show_limit || "N/A"}
+                {record.MAX_SHOW_LIMIT || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label='Daily Message Limit per Subscriber'>
-                {campaignData.daily_message_limit || "N/A"}
+                {record.DAILY_MESSAGE_LIMIT || "N/A"}
               </Descriptions.Item>
             </Descriptions>
           </Card>
         </Flex>
         <Card
-          title={`Test Numbers (${campaignData.test_numbers.length} numbers)`}
+          title={`Test Numbers (${record.TEST_NUMBERS?.length || 0} numbers)`}
         >
           <AppTable
             columns={columns}
-            dataSource={campaignData.test_numbers.map((item) => {
+            dataSource={record.TEST_NUMBERS?.map((item) => {
               return {
                 phone_number: item,
               };
@@ -181,48 +173,30 @@ const AddCampaignStep3 = ({ steps }) => {
         <Card title='Time Settings'>
           <Descriptions column={2}>
             <Descriptions.Item label='Start Date' span={1}>
-              {dayjs(campaignData.start_time).format("DD/MM/YYYY") || "N/A"}
+              {dayjs(record.START_TIME).format("DD/MM/YYYY") || "N/A"}
             </Descriptions.Item>
             <Descriptions.Item label='Start With' span={2}>
-              {dayjs(campaignData.start_time).format("HH:mm A") || "N/A"}
+              {dayjs(record.START_TIME).format("HH:mm A") || "N/A"}
             </Descriptions.Item>
             <Descriptions.Item label='End Date' span={1}>
-              {dayjs(campaignData.end_time).format("DD/MM/YYYY") || "N/A"}
+              {dayjs(record.END_TIME).format("DD/MM/YYYY") || "N/A"}
             </Descriptions.Item>
             <Descriptions.Item label='End With' span={2}>
-              {dayjs(campaignData.end_time).format("HH:mm A") || "N/A"}
+              {dayjs(record.END_TIME).format("HH:mm A") || "N/A"}
             </Descriptions.Item>
             <Descriptions.Item label='Time Slots' span='filled'>
-              {JSON.parse(campaignData.time_slot)?.map((slot, index) => {
+              {JSON.parse(record.TIME_SLOT)?.map((slot, index) => {
                 return <Tag key={index}>{slot}</Tag>;
               }) || "N/A"}
             </Descriptions.Item>
           </Descriptions>
         </Card>
       </Space>
-
-      <Flex
-        justify='space-between'
-        align='center'
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <div>
-          {currentStep > 0 && <Button onClick={prevStep}>Previous</Button>}
-        </div>
-
-        <Flex gap={8}>
-          <Button onClick={nextStep} type='primary'>
-            {currentStep === steps.length - 1 ? "Confirm and Save" : "Next"}
-          </Button>
-        </Flex>
-      </Flex>
     </>
   );
 };
 
-export default AddCampaignStep3;
+export default CampaignDetails;
 
 const Tag = styled.span`
   display: inline-block;

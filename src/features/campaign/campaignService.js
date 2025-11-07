@@ -15,8 +15,10 @@ class CampaignService {
     return data;
   }
 
-  static async updateCampaign(id, body) {
-    const { data } = await axiosClient.post(API_PATH.UPDATE_CAMPAIGN.replace(':id', id), body);
+  static async updateCampaign(body) {
+    console.log('body', body)
+    const {id, ...rest} = body;
+    const { data } = await axiosClient.post(API_PATH.UPDATE_CAMPAIGN.replace(':id', id), rest);
     return data;
   }
 
@@ -33,6 +35,13 @@ class CampaignService {
         }
       }
     );
+
+    return data;
+  }
+
+  static async duplicatieCampaign(body) { 
+    const { id, ...rest } = body;
+    const { data } = await axiosClient.post(API_PATH.DUPLICATE_CAMPAIGN.replace(':id', id), rest);
 
     return data;
   }

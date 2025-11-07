@@ -4,7 +4,17 @@ import AppSelect from "@/components/AppSelect";
 import AppTable from "@/components/AppTable";
 import ContextMenu from "@/components/common/ContextMenu";
 import PATH from "@/configs/PATH";
-import { Table, Space, Flex, Button, Tooltip, Form, Row, Col, Switch } from "antd";
+import {
+  Table,
+  Space,
+  Flex,
+  Button,
+  Tooltip,
+  Form,
+  Row,
+  Col,
+  Switch,
+} from "antd";
 import {
   CircleGaugeIcon,
   CircleXIcon,
@@ -132,10 +142,14 @@ const Broadcast = () => {
               <Button type='text' icon={<PencilIcon size={16} />} />
             </Tooltip>
             <Tooltip title='Delete'>
-              <Button variant='text' color="danger" icon={<Trash2Icon size={16} />} />
+              <Button
+                variant='text'
+                color='danger'
+                icon={<Trash2Icon size={16} />}
+              />
             </Tooltip>
             <Tooltip title='Export Excel'>
-              <Button type="text" icon={<SheetIcon size={16} />} />
+              <Button type='text' icon={<SheetIcon size={16} />} />
             </Tooltip>
           </Flex>
         );
@@ -159,7 +173,9 @@ const Broadcast = () => {
                 label='Search Campaign'
                 name='campaign'
                 placeholder='Search Campaign'
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
             <Col span={6}>
@@ -167,7 +183,9 @@ const Broadcast = () => {
                 label='Created Date'
                 name='created_date'
                 placeholder='Created Date'
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
             <Col span={6}>
@@ -175,7 +193,9 @@ const Broadcast = () => {
                 label='User Upload'
                 name='user_upload'
                 placeholder='User Upload'
-                noStyle
+                formStyle={{
+                  marginBottom: 0,
+                }}
               />
             </Col>
           </Row>

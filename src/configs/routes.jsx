@@ -9,6 +9,7 @@ import LoadingFallback from '@/components/common/LoadingFallback';
 const Overview = lazy(() => import('@/pages/Overview'));
 const Login = lazy(() => import('@/pages/Login'));
 const Campaigns = lazy(() => import('@/pages/Campaigns'));
+const CampaignDetails = lazy(() => import('@/pages/Campaigns/CampaignDetails'));
 const Broadcast = lazy(() => import('@/pages/Broadcast'));
 const Blacklist = lazy(() => import('@/pages/Blacklist'));
 const AccountManagement = lazy(() => import('@/pages/AccountManagement'));
@@ -46,6 +47,10 @@ const useAppRoutes = () => {
         {
           path: PATH.CAMPAIGN.CREATE_CAMPAIGN,
           element: <LazyWrapper><AddCampaign /></LazyWrapper>
+        },
+        {
+          path: PATH.CAMPAIGN.CAMPAIGN_DETAILS,
+          element: <LazyWrapper><CampaignDetails /></LazyWrapper>
         },
         {
           path: PATH.BROADCAST,

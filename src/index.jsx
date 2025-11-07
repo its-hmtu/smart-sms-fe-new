@@ -6,16 +6,28 @@ import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
 import store from "./app/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { App as AntdApp, ConfigProvider } from "antd";
+import "antd/dist/reset.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const queryClient = new QueryClient();
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </Provider>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#2C7A8C"
+        }
+      }}
+    >
+      <AntdApp>
+        <Provider store={store}>
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
+        </Provider>
+      </AntdApp>
+    </ConfigProvider>
   </React.StrictMode>
 );
 

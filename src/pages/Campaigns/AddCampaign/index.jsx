@@ -144,8 +144,7 @@ const AddCampaign = () => {
       case 2:
         return (
           <AddCampaignStep3 
-            form={formStep3}
-            initialData={getStepData(2)}
+            steps={steps}
           />
         );
       default:

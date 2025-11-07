@@ -6,7 +6,9 @@ function App() {
   const routes = useAppRoutes();
   return (
     <>
-      <ToastContainer />
+      <ToastContainer
+        theme="colored"
+      />
       <RouterProvider router={routes} />
     </>
   );

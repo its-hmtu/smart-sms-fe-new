@@ -16,7 +16,6 @@ axiosClient.interceptors.request.use(async (config) => {
   const user = JSON.parse(localStorage.getItem("user"));
   if (user) {
     const accessToken = user.accessToken;
-    console.log(accessToken);
     config.headers = {
       ...config.headers,
       Authorization: `Bearer ${accessToken || ""}`,

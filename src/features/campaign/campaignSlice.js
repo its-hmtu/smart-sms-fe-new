@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  currentStep: 1,
+  currentStep: 0,
   stepData: {
     step1: {},
     step2: {},

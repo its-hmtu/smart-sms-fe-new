@@ -2,23 +2,52 @@ import AppInput from "@/components/AppInput";
 import AppTable from "@/components/AppTable";
 import AppUpload from "@/components/AppUpload";
 import { Button, Col, Flex, Form, Modal, Row } from "antd";
-import { DownloadIcon, PencilIcon, PlusIcon, TrashIcon, UploadIcon } from "lucide-react";
-import React, { useMemo } from "react";
+import {
+  DownloadIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
+import React, { useEffect, useMemo } from "react";
 import phoneFrame from "@/assets/images/phone-frame.png";
 import useCampaign from "@/features/campaign/useCampaign";
 import AddTestListModal from "../components/AddTestListModal";
+import DeleteModal from "@/components/Modals/DeleteModal";
+import { useMutation } from "@tanstack/react-query";
+import CampaignService from "@/features/campaign/campaignService";
+import { toast } from "react-toastify";
+import { isEmpty } from "lodash";
 
 const AddCampaignStep2 = ({ steps }) => {
   const [form] = Form.useForm();
   const [testNumbers, setTestNumbers] = React.useState([]);
-  const [openAddModal, setOpenAddModal] = React.useState(false);
-
+  const [demoText, setDemoText] = React.useState("");
+  const [openAddModal, setOpenAddModal] = React.useState({
+    open: false,
+    record: null,
+  });
+  const [deleteModal, setDeleteModal] = React.useState({
+    open: false,
+    record: null,
+  });
   const {
     // step1Data,
     campaign,
     currentStep,
     saveStepData,
+    updateCurrentStep,
   } = useCampaign();
+  const parsedData = useMemo(() => {
+    if (isEmpty(campaign?.stepData?.step1)) {
+      return {};
+    }
+    return JSON.parse(campaign?.stepData?.step1?.data);
+  }, [campaign]);
+
+  const updateCampaignMutation = useMutation({
+    mutationFn: CampaignService.updateCampaign,
+  });
 
   // Initialize form with saved data
   // React.useEffect(() => {
@@ -39,19 +68,25 @@ const AddCampaignStep2 = ({ steps }) => {
   // }, [testNumbers, saveStepData, form]);
 
   const handleEdit = (record) => {
-    // Set the phone number in the input for editing
-    form.setFieldValue("test_number", record.phone_number);
-    // Remove from list (will be re-added when user clicks add)
-    handleDelete(record);
+    setOpenAddModal({
+      open: true,
+      record,
+    });
   };
 
   const handleDelete = (record) => {
-    setTestNumbers((prev) => prev.filter((item) => item.id !== record.id));
+    setDeleteModal({
+      open: true,
+      record,
+    });
   };
 
   const handleAddTestNumber = () => {
-    setOpenAddModal(true);
-  }
+    setOpenAddModal({
+      open: true,
+      record: null,
+    });
+  };
 
   const columns = useMemo(
     () => [
@@ -83,15 +118,75 @@ const AddCampaignStep2 = ({ steps }) => {
     []
   );
 
-  const nextStep = () => {};
-
-  const prevStep = () => {};
-
-  const onOk = () => {};
-  
-  const onCancel = () => {
-    setOpenAddModal(false);
+  const beforeNextStep = async () => {
+    const testNumberData = testNumbers.map((item) => item.phone_number) || [];
+    const { created_by, step, created_at, updated_at, ...rest } =
+      campaign.stepData.step1;
+    const payload = {
+      id: campaign.id,
+      data: parsedData,
+      test_numbers: testNumberData,
+      user_update: created_by,
+      step: 2,
+      ...rest,
+    };
+    await updateCampaignMutation.mutateAsync(payload, {
+      onSuccess: (data) => {
+        saveStepData(0, payload);
+      },
+    });
   };
+
+  const nextStep = async () => {
+    // const values =
+
+    await beforeNextStep()
+      .then(() => {
+        updateCurrentStep(2);
+      })
+      .catch((error) => {
+        toast.error("Something went wrong. Please try again.");
+      });
+  };
+
+  const prevStep = () => {
+    updateCurrentStep(0);
+  };
+
+  const onOk = (values, isEdit) => {
+    if (isEdit) {
+      setTestNumbers((prev) =>
+        prev.map((item) =>
+          item.id === values.id
+            ? { ...item, phone_number: values.phone_number }
+            : item
+        )
+      );
+    } else {
+      const newTestNumber = {
+        id: Date.now(),
+        phone_number: values.phone_number,
+      };
+      setTestNumbers((prev) => [...prev, newTestNumber]);
+    }
+  };
+
+  const onDeleteOk = () => {
+    const recordToDelete = deleteModal.record;
+    setTestNumbers((prev) =>
+      prev.filter((item) => item.id !== recordToDelete.id)
+    );
+    setDeleteModal({
+      open: false,
+      record: null,
+    });
+  };
+
+  useEffect(() => {
+    if (campaign.stepData.step1) {
+      setDemoText(parsedData.text_1 || "");
+    }
+  }, [campaign.stepData.step1, parsedData]);
 
   return (
     <>
@@ -105,9 +200,7 @@ const AddCampaignStep2 = ({ steps }) => {
                 placeholder='Enter your number'
               />
               <Form.Item label=' '>
-                <Button type='primary'>
-                  Send Now
-                </Button>
+                <Button type='primary'>Send Now</Button>
               </Form.Item>
             </Flex>
           </Col>
@@ -131,7 +224,12 @@ const AddCampaignStep2 = ({ steps }) => {
                 <Button>Template</Button>
                 <Button icon={<DownloadIcon size={14} />}>Export Excel</Button>
                 <Button icon={<UploadIcon size={14} />}>Import File</Button>
-                <Button icon={<PlusIcon size={14} />} onClick={handleAddTestNumber}>Add</Button>
+                <Button
+                  icon={<PlusIcon size={14} />}
+                  onClick={handleAddTestNumber}
+                >
+                  Add
+                </Button>
               </Flex>
             </Flex>
             <AppTable
@@ -194,7 +292,17 @@ const AddCampaignStep2 = ({ steps }) => {
                     }}
                     gap={24}
                   >
-                    <div>{campaign?.stepData?.step1?.data?.text_1}</div>
+                    <div>{demoText}</div>
+                    <Flex vertical gap={8} align="start" style={{
+                      width: "100%"
+                    }}>
+                      {parsedData.items &&
+                        parsedData.items.map((item, index) => (
+                          <div key={index}>{
+                            `${index + 1}. ${item.item_name}`
+                          }</div>
+                        ))}
+                    </Flex>
                     <Flex
                       align='center'
                       justify='space-between'
@@ -215,6 +323,13 @@ const AddCampaignStep2 = ({ steps }) => {
                           textAlign: "center",
                           cursor: "pointer",
                         }}
+                        onClick={() => {
+                          if (demoText === parsedData.text_2) {
+                            setDemoText(parsedData.text_1);
+                          } else {
+                            return;
+                          }
+                        }}
                       >
                         Cancel
                       </div>
@@ -229,6 +344,9 @@ const AddCampaignStep2 = ({ steps }) => {
                           flexBasis: "50%",
                           textAlign: "center",
                           cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          setDemoText(parsedData.text_2 || "");
                         }}
                       >
                         Accept
@@ -260,7 +378,18 @@ const AddCampaignStep2 = ({ steps }) => {
         </Flex>
       </Flex>
 
-      <AddTestListModal open={openAddModal} setOpen={setOpenAddModal} onOk={onOk} onCancel={onCancel} />
+      <AddTestListModal
+        open={openAddModal}
+        setOpen={setOpenAddModal}
+        onOk={onOk}
+      />
+      <DeleteModal
+        open={deleteModal.open}
+        setOpen={setDeleteModal}
+        onOk={onDeleteOk}
+        title={`Delete test number ${deleteModal.record?.phone_number}`}
+        content={"Are you sure you want to delete this test number?"}
+      />
     </>
   );
 };

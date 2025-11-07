@@ -24,6 +24,7 @@ import CampaignService from "@/features/campaign/campaignService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import useUser from "@/features/user/useUser";
 import { toast } from "react-toastify";
+import { isEmpty } from "lodash";
 const originalMenuRequestTableData = [
   {
     key: 1,
@@ -111,6 +112,29 @@ const AddCampaignStep1 = ({ steps }) => {
   const createCampaignMutation = useMutation({
     mutationFn: CampaignService.createCampaign,
   });
+
+  useEffect(() => {
+    if (!isEmpty(campaign.stepData.step1)) {
+      const parsedData = JSON.parse(campaign.stepData.step1.data);
+      const parsedTimeSlot = JSON.parse(campaign.stepData.step1.time_slot || "[]");
+      form.setFieldsValue({
+        ...campaign.stepData.step1,
+        campaign_name: campaign.stepData.step1.name,
+        text_1: parsedData.text_1,
+        text_2: parsedData.text_2,
+        mo: parsedData.mo,
+        short_code: parsedData.short_code,
+        subscriber_list_select: campaign.stepData.step1.sub_group_id,
+        max_show_limit: campaign.stepData.step1.max_show_limit,
+        time_slot: parsedTimeSlot,
+        start_date: dayjs(campaign.stepData.step1.start_time).format("YYYY-MM-DD"),
+        start_with: dayjs(campaign.stepData.step1.start_time).format('HH:mm'),
+        end_date: dayjs(campaign.stepData.step1.end_time).format("YYYY-MM-DD"),
+        end_with: dayjs(campaign.stepData.step1.end_time).format('HH:mm'),
+      })
+      setSelectedType(campaign.stepData.step1.type)
+    }
+  }, [campaign]);
 
   // console.log("Subscriber List:", subscriberList);
 
@@ -225,7 +249,7 @@ const AddCampaignStep1 = ({ steps }) => {
         return (
           <Space direction='vertical' style={{ width: "100%" }}>
             <Row gutter={[16, 16]}>
-              <Col span={24}>
+              <Col span={12}>
                 <AppTextArea
                   label='Text 1'
                   name='text_1'
@@ -236,12 +260,14 @@ const AddCampaignStep1 = ({ steps }) => {
                   rules={[
                     {
                       required: true,
-                      message: "Please enter text 1 content",
+                      message: "Please enter text 1",
                     },
                   ]}
                 />
               </Col>
-              <Col span={24}>
+            </Row>
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
                 <AppTextArea
                   label='Text 2'
                   name='text_2'
@@ -252,7 +278,7 @@ const AddCampaignStep1 = ({ steps }) => {
                   rules={[
                     {
                       required: true,
-                      message: "Please enter text 2 content",
+                      message: "Please enter text 2",
                     },
                   ]}
                 />
@@ -266,7 +292,7 @@ const AddCampaignStep1 = ({ steps }) => {
                   }}
                   label={
                     <Flex
-                      justify='space-between'
+                      justify={"space-between"}
                       align='center'
                       style={{
                         width: "100%",
@@ -287,6 +313,7 @@ const AddCampaignStep1 = ({ steps }) => {
                             return [...prev, newItem];
                           });
                         }}
+                        disabled={menuRequestTableData.length >= 6}
                       >
                         Add more items
                       </Button>
@@ -297,16 +324,12 @@ const AddCampaignStep1 = ({ steps }) => {
                     gap={menuRequestTableData.length <= 2 ? 24 : 16}
                     wrap='wrap'
                     align='center'
-                    justify={
-                      menuRequestTableData.length <= 2
-                        ? "start"
-                        : "space-between"
-                    }
+                    justify={"start"}
                   >
                     {menuRequestTableData.map((data) => (
                       <Card
                         key={data.key}
-                        style={{ width: 520, position: "relative" }}
+                        style={{ width: 530, position: "relative" }}
                       >
                         {data.key !== 1 && (
                           <Button
@@ -376,6 +399,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   placeholder='Text 1'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 1",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -388,6 +417,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   placeholder='Text 2'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 2",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -421,6 +456,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   placeholder='Text 1'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 1",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -433,6 +474,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   placeholder='Text 2'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 2",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -466,6 +513,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   showCount
                   placeholder='Text 1'
                   maxLength={100}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 1",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -478,6 +531,12 @@ const AddCampaignStep1 = ({ steps }) => {
                   placeholder='Text 2'
                   maxLength={100}
                   required
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter text 2",
+                    },
+                  ]}
                 />
               </Col>
             </Row>
@@ -516,7 +575,7 @@ const AddCampaignStep1 = ({ steps }) => {
       time_slot_end,
       campaign_name,
       type,
-      repeat_display,
+      max_show_limit,
       daily_message_limit,
       subscriber_list_select,
       text_1,
@@ -524,10 +583,22 @@ const AddCampaignStep1 = ({ steps }) => {
       ...rest
     } = allFormValues;
 
-    const startDate = dayjs(start_date).format("YYYY-MM-DD");
-    const endDate = dayjs(end_date).format("YYYY-MM-DD");
-    const startWith = dayjs(start_with).format("HH:mm");
-    const endWith = dayjs(end_with).format("HH:mm");
+    const startDate =
+      start_date && dayjs(start_date).isValid()
+        ? dayjs(start_date).format("YYYY-MM-DD")
+        : null;
+    const endDate =
+      end_date && dayjs(end_date).isValid()
+        ? dayjs(end_date).format("YYYY-MM-DD")
+        : null;
+    const startWith =
+      start_with && dayjs(start_with).isValid()
+        ? dayjs(start_with).format("HH:mm")
+        : null;
+    const endWith =
+      end_with && dayjs(end_with).isValid()
+        ? dayjs(end_with).format("HH:mm")
+        : null;
 
     // Handle different request types data structure
     let campaignData = {
@@ -566,7 +637,7 @@ const AddCampaignStep1 = ({ steps }) => {
       start_time: `${startDate} ${startWith}` || "",
       end_time: `${endDate} ${endWith}` || "",
       time_slot: time_slot || "",
-      max_show_limit: repeat_display || "",
+      max_show_limit: max_show_limit || "",
       daily_message_limit: daily_message_limit || "",
       group_id: subscriber_list_select || "",
       step: 1,
@@ -576,7 +647,6 @@ const AddCampaignStep1 = ({ steps }) => {
     await createCampaignMutation.mutateAsync(payload, {
       onSuccess: (data) => {
         saveStepData(0, data);
-        updateCurrentStep(1);
       },
     });
   };
@@ -585,7 +655,12 @@ const AddCampaignStep1 = ({ steps }) => {
     await form
       .validateFields()
       .then(() => beforeNextStep())
+      .then(() => {
+        updateCurrentStep(1);
+      })
       .catch((errorInfo) => {
+        console.log(errorInfo);
+
         toast.error("Please fill all required info fields");
       });
   };
@@ -613,7 +688,6 @@ const AddCampaignStep1 = ({ steps }) => {
       <Form
         layout='vertical'
         initialValues={{
-          campaign_name: "",
           type: selectedType,
         }}
         component={false}
@@ -672,7 +746,7 @@ const AddCampaignStep1 = ({ steps }) => {
 
         {selectedType && (
           <Row gutter={[24, 24]}>
-            <Col span={8}>
+            <Col span={6}>
               <SectionTitle>Subscriber List</SectionTitle>
               <Form.Item>
                 <Button
@@ -723,11 +797,11 @@ const AddCampaignStep1 = ({ steps }) => {
                 refetchSubscriberList={refetchSubscriberList}
               />
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <SectionTitle>Spam settings</SectionTitle>
               <AppInput
                 label='Repeat Display (non-interactive)'
-                name='repeat_display'
+                name='max_show_limit'
                 placeholder='Repeat Display'
               />
               <AppInput
@@ -736,7 +810,15 @@ const AddCampaignStep1 = ({ steps }) => {
                 placeholder='Daily Message Limit per Subscriber'
               />
             </Col>
-            <Col span={8}>
+            <Col span={6}>
+              <SectionTitle>Target Limit</SectionTitle>
+              <AppInput
+                label='Target Limit'
+                name='target_limit'
+                placeholder='Target Limit'
+              />
+            </Col>
+            <Col span={6}>
               <SectionTitle>Time settings</SectionTitle>
               <Row gutter={[8, 8]}>
                 <Col span={12}>

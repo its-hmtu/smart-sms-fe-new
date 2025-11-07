@@ -4,6 +4,7 @@ const PATH = {
   CAMPAIGN: {
     ROOT: '/manage-campaigns',
     CREATE_CAMPAIGN: '/manage-campaigns/create',
+    CAMPAIGN_DETAILS: '/manage-campaigns/:id'
   },
   BROADCAST: '/broadcast-list',
   BLACK_LIST: '/blacklist',

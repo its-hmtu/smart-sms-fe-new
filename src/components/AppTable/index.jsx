@@ -15,12 +15,12 @@ function AppTable({
       if (col.render) {
         return {
           ...col,
-          align: 'center',
+          align: "center",
         };
       }
       return {
         ...col,
-        align: 'center',
+        align: "center",
         render: (text) => {
           if (typeof text === "number") {
             return formatNumber(text);
@@ -35,16 +35,23 @@ function AppTable({
     <Table
       columns={formatColumns}
       dataSource={dataSource}
-      pagination={{
-        showSizeChanger: true,
-        showQuickJumper: true,
-        showTotal: (total, range) => total === 1 ? `Showing ${total} item` : `Showing ${range[0]}-${range[1]} of ${total} items`,
-        ...pagination,
-      }}
+      pagination={
+        pagination === null
+          ? false
+          : {
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) =>
+                total === 1
+                  ? `Showing ${total} item`
+                  : `Showing ${range[0]}-${range[1]} of ${total} items`,
+              ...pagination,
+            }
+      }
       bordered
       loading={loading}
       scroll={{
-        x: 'max-content',
+        x: "max-content",
       }}
       {...props}
     />
